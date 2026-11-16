@@ -32,9 +32,9 @@ public class EntityHitboxMixin {
         if (box == null) return;
 
         double mult = cfg.hitboxMultiplier;
-        double expandX = box.getXLength() * (mult - 1.0) / 2.0;
-        double expandY = box.getYLength() * (mult - 1.0) / 2.0;
-        double expandZ = box.getZLength() * (mult - 1.0) / 2.0;
+        double expandX = (box.maxX - box.minX) * (mult - 1.0) / 2.0;
+        double expandY = (box.maxY - box.minY) * (mult - 1.0) / 2.0;
+        double expandZ = (box.maxZ - box.minZ) * (mult - 1.0) / 2.0;
 
         cir.setReturnValue(box.expand(expandX, expandY, expandZ));
     }
