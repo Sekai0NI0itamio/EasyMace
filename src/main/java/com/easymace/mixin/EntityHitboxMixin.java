@@ -1,8 +1,12 @@
 package com.easymace.mixin;
 
 import com.easymace.config.EasyMaceConfig;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Box;
@@ -18,6 +22,12 @@ public class EntityHitboxMixin {
         EasyMaceConfig cfg = EasyMaceConfig.get();
         if (!cfg.hitboxEnabled) return;
         if (cfg.hitboxMultiplier <= 1.0) return;
+
+        // Only expand hitboxes when the player is holding a mace
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client == null || client.player == null) return;
+        ItemStack mainHand = client.player.getMainHandStack();
+        if (mainHand.getItem() != Items.MACE) return;
 
         Entity self = (Entity) (Object) this;
 
