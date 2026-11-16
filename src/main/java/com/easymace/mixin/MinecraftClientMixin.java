@@ -9,7 +9,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.ItemEnchantmentsComponent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -85,12 +84,21 @@ public class MinecraftClientMixin {
 
     private boolean easymace$hasEnchantment(ItemStack stack, String enchantName) {
         if (enchantName == null || enchantName.isEmpty()) return false;
-        ItemEnchantmentsComponent enchantments = stack.get(DataComponentTypes.ENCHANTMENTS);
+        Object enchantments = stack.get(DataComponentTypes.ENCHANTMENTS);
         if (enchantments == null) return false;
         String lower = enchantName.toLowerCase();
-        for (var entry : enchantments.getEnchantmentEntries()) {
-            String name = entry.getKey().value().toString().toLowerCase();
-            if (name.contains(lower)) return true;
+        // Best-effort detection via toString (works across mapping versions)
+        String str = enchantments.toString().toLowerCase();
+        if (str.contains(lower)) return true;
+        // Try invoking any method that returns enchantment info
+        for (java.lang.reflect.Method m : enchantments.getClass().getDeclaredMethods()) {
+            if (m.getParameterCount() == 0) {
+                try {
+                    m.setAccessible(true);
+                    Object r = m.invoke(enchantments);
+                    if (r != null && r.toString().toLowerCase().contains(lower)) return true;
+                } catch (Exception ignored) {}
+            }
         }
         return false;
     }
