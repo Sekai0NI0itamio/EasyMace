@@ -5,14 +5,12 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -32,11 +30,14 @@ public class EntityHitboxMixin {
         ItemStack mainHand = client.player.getMainHandStack();
         if (mainHand.getItem() != Items.MACE) return;
 
-        // Only expand the hitbox of the entity the player is currently targeting
         Entity self = (Entity) (Object) this;
-        HitResult crosshair = client.crosshairTarget;
-        if (!(crosshair instanceof EntityHitResult entityHit)) return;
-        if (entityHit.getEntity() != self) return;
+
+        // Don't expand the player's own hitbox
+        if (self == client.player) return;
+
+        // Only expand entities within attack range (6 blocks)
+        double distSq = client.player.squaredDistanceTo(self);
+        if (distSq > 36.0) return;
 
         // Check if this entity type should be expanded
         if (!cfg.hitboxAllEntities) {
