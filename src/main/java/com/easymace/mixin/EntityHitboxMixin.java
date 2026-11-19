@@ -17,28 +17,27 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class EntityHitboxMixin {
     @Inject(method = "getBoundingBox", at = @At("RETURN"), cancellable = true)
     private void easymace$expandHitbox(CallbackInfoReturnable<Box> cir) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        Entity self = (Entity) (Object) this;
+
+        // DEBUG: log every local-player bounding box call
+        if (client != null && client.player != null
+                && self.getUuid().equals(client.player.getUuid())) {
+            System.out.println("[EasyMace][DBG] LOCAL PLAYER getBoundingBox class="
+                    + self.getClass().getName() + " sameObject=" + (self == client.player));
+            return; // never expand the local player
+        }
+
         EasyMaceConfig cfg = EasyMaceConfig.get();
         if (!cfg.hitboxEnabled) return;
         if (cfg.hitboxMultiplier <= 1.0) return;
-
-        MinecraftClient client = MinecraftClient.getInstance();
         if (client == null || client.player == null) return;
         ItemStack mainHand = client.player.getMainHandStack();
         if (mainHand.getItem() != Items.MACE) return;
 
-        Entity self = (Entity) (Object) this;
-
-        // Never expand the local player's hitbox. The integrated server uses a
-        // separate ServerPlayerEntity instance, so an identity check against
-        // client.player is not enough - compare UUIDs instead. Expanding the
-        // player's box makes block collision use a larger box (stand on air).
-        if (self.getUuid().equals(client.player.getUuid())) return;
-
-        // Only expand entities within attack range (6 blocks)
         double distSq = client.player.squaredDistanceTo(self);
         if (distSq > 36.0) return;
 
-        // Check if this entity type should be expanded
         if (!cfg.hitboxAllEntities) {
             Identifier typeId = Registries.ENTITY_TYPE.getId(self.getType());
             String idStr = typeId.toString();
@@ -47,6 +46,9 @@ public class EntityHitboxMixin {
 
         Box box = cir.getReturnValue();
         if (box == null) return;
+
+        System.out.println("[EasyMace][DBG] expanding " + self.getClass().getSimpleName()
+                + " type=" + self.getType() + " distSq=" + distSq);
 
         double mult = cfg.hitboxMultiplier;
         double expandX = (box.maxX - box.minX) * (mult - 1.0) / 2.0;
