@@ -3,14 +3,11 @@ package com.easymace.mixin;
 import com.easymace.config.EasyMaceConfig;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -24,7 +21,6 @@ public class EntityHitboxMixin {
         if (!cfg.hitboxEnabled) return;
         if (cfg.hitboxMultiplier <= 1.0) return;
 
-        // Only expand hitboxes when the player is holding a mace
         MinecraftClient client = MinecraftClient.getInstance();
         if (client == null || client.player == null) return;
         ItemStack mainHand = client.player.getMainHandStack();
@@ -32,8 +28,11 @@ public class EntityHitboxMixin {
 
         Entity self = (Entity) (Object) this;
 
-        // Don't expand the player's own hitbox
-        if (self == client.player) return;
+        // Never expand the local player's hitbox. The integrated server uses a
+        // separate ServerPlayerEntity instance, so an identity check against
+        // client.player is not enough - compare UUIDs instead. Expanding the
+        // player's box makes block collision use a larger box (stand on air).
+        if (self.getUuid().equals(client.player.getUuid())) return;
 
         // Only expand entities within attack range (6 blocks)
         double distSq = client.player.squaredDistanceTo(self);
