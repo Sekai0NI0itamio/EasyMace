@@ -15,7 +15,7 @@ public class EasyMaceMod implements ClientModInitializer {
         EasyMaceConfig.load();
         EasyMaceClientHooks.register();
         EasyMaceConfig cfg = EasyMaceConfig.get();
-        LOG.info("[EasyMace] initialized: enabled={} slamThreshold={} hitboxMult={} hitboxAll={}",
-                cfg.enabled, cfg.slamHeightThreshold, cfg.hitboxMultiplier, cfg.hitboxAllEntities);
+        LOG.info("[EasyMace] initialized: enabled={} slamThreshold={} hitboxExpand={} hitboxAll={}",
+                cfg.enabled, cfg.slamHeightThreshold, cfg.hitboxExpand, cfg.hitboxAllEntities);
     }
 }

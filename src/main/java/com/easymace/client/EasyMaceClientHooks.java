@@ -20,7 +20,7 @@ public class EasyMaceClientHooks {
                     ctx.getSource().sendFeedback(Text.literal(
                         "[EasyMace] enabled=" + cfg.enabled +
                         " slamThreshold=" + cfg.slamHeightThreshold +
-                        " hitboxMult=" + cfg.hitboxMultiplier +
+                        " hitboxExpand=" + cfg.hitboxExpand +
                         " hitboxAll=" + cfg.hitboxAllEntities));
                     return 1;
                 }))
