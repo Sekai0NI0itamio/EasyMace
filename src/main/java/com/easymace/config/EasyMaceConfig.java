@@ -31,7 +31,7 @@ public class EasyMaceConfig {
     public String preferredEnchantForSlam = "density";
 
     /** Entity hitbox expansion multiplier (1.0 = vanilla, 5.0 = 5x). */
-    public double hitboxMultiplier = 5.0;
+    public double hitboxExpand = 1.0;
 
     /** Whether hitbox expansion is enabled. */
     public boolean hitboxEnabled = true;
